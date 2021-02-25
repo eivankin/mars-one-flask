@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% block content %}
+    <h1>{{ title }}</h1>
+    <form action="" method="post" novalidate>
+        {% if message %}
+            <div class="alert alert-{{ message_type }}" role="alert">
+                {{ message }}
+            </div>
+        {% endif %}
+        {{ form.hidden_tag() }}
+        {% for field in form if field.name not in ('csrf_token', 'submit', 'is_finished') %}
+            <p>
+                {{ field.label() }}<br>
+                {% set params = {'class': 'form-control', 'type': 'number' if field.name in ('size', 'leader') else 'text'} %}
+                {{ field(**params)}}
+                {% for error in field.errors %}
+                    <div class="alert alert-danger" role="alert">
+                        {{ error }}
+                    </div>
+                {% endfor %}
+            </p>
+        {% endfor %}
+        <p>{{ form.is_finished() }} {{ form.is_finished.label }}</p>
+        <p>{{ form.submit(type="submit", class="btn btn-primary") }}</p>
+    </form>
+{% endblock %}
