@@ -30,7 +30,7 @@ def register():
     form = RegisterForm()
     if form.validate_on_submit():
         if session.query(User).filter(User.email == form.login.data).first():
-            return render_template('login.html', title='Регистрация', form=form,
+            return render_template('register.html', title='Регистрация', form=form,
                                    message='Login is not unique!', message_type='danger')
         user = User()
         user.surname = form.surname.data
@@ -43,9 +43,9 @@ def register():
         user.hashed_password = generate_password_hash(form.password.data)
         session.add(user)
         session.commit()
-        return render_template('login.html', title='Регистрация', form=form,
+        return render_template('register.html', title='Регистрация', form=form,
                                message='Account successfully created', message_type='success')
-    return render_template('login.html', title='Регистрация', form=form)
+    return render_template('register.html', title='Регистрация', form=form)
 
 
 if __name__ == '__main__':
