@@ -32,3 +32,4 @@ class AddJobForm(FlaskForm):
     collaborators = StringField('Collaborators IDs (comma-separated)',
                                 validators=[DataRequired()])
     is_finished = BooleanField('Is job finished?')
+    submit = SubmitField('Submit')
