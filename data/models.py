@@ -44,6 +44,7 @@ class Jobs(SqlAlchemyBase):
     start_date = sqlalchemy.Column(sqlalchemy.DateTime, default=datetime.datetime.now)
     end_date = sqlalchemy.Column(sqlalchemy.DateTime, default=datetime.datetime.now)
     is_finished = sqlalchemy.Column(sqlalchemy.Boolean)
+    categories = sqlalchemy.orm.relation('Category', secondary='association', backref='jobs')
 
 
 class Department(SqlAlchemyBase):
@@ -56,3 +57,24 @@ class Department(SqlAlchemyBase):
     title = sqlalchemy.Column(sqlalchemy.String)
     members = sqlalchemy.Column(sqlalchemy.String)
     email = sqlalchemy.Column(sqlalchemy.String, unique=True)
+
+
+class Category(SqlAlchemyBase):
+    __tablename__ = 'categories'
+
+    id = sqlalchemy.Column(sqlalchemy.Integer,
+                           primary_key=True, autoincrement=True)
+    name = sqlalchemy.Column(sqlalchemy.String)
+
+    def __str__(self):
+        return self.name
+
+
+association_table = sqlalchemy.Table(
+    'association',
+    SqlAlchemyBase.metadata,
+    sqlalchemy.Column('job', sqlalchemy.Integer,
+                      sqlalchemy.ForeignKey('jobs.id')),
+    sqlalchemy.Column('category', sqlalchemy.Integer,
+                      sqlalchemy.ForeignKey('categories.id'))
+)

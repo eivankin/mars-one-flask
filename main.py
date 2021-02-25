@@ -1,10 +1,11 @@
 import os
+import json
 from flask import Flask, render_template, redirect, request
 from dotenv import load_dotenv
 from flask_login import LoginManager, login_user, login_required, \
     logout_user, current_user
 from data import db_session
-from data.models import User, Jobs, Department
+from data.models import User, Jobs, Department, Category
 from forms import RegisterForm, LoginForm, JobForm, DepartmentForm
 
 load_dotenv()
@@ -14,6 +15,37 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 
 
+def save_job(form, job=None):
+    flag = False
+    if job is None:
+        job = Jobs()
+        flag = True
+    job.job = form.job.data
+    job.team_leader_id = form.team_leader_id.data
+    job.work_size = form.work_size.data
+    job.collaborators = form.collaborators.data
+    job.is_finished = form.is_finished.data
+    job.categories = session.query(Category).filter(
+        Category.id.in_(json.loads(form.categories.data))).all()
+    if flag:
+        session.add(job)
+    session.commit()
+
+
+def save_department(form, department=None):
+    flag = False
+    if department is None:
+        department = Department()
+        flag = True
+    department.title = form.title.data
+    department.chief_id = form.chief_id.data
+    department.members = form.members.data
+    department.email = form.email.data
+    if flag:
+        session.add(department)
+    session.commit()
+
+
 @login_manager.user_loader
 def load_user(user_id):
     return session.query(User).get(user_id)
@@ -21,7 +53,13 @@ def load_user(user_id):
 
 @app.route('/')
 def works_log():
-    return render_template('index.html', jobs=session.query(Jobs).all(),
+    # Решил оправдать наличие категорий хоть каким-то функционалом
+    category = request.args.get('category_id')
+    if category:
+        jobs = session.query(Category).get(category).jobs
+    else:
+        jobs = session.query(Jobs).all()
+    return render_template('index.html', jobs=jobs,
                            title='Works log', message=request.args.get('message'),
                            message_type=request.args.get('message_type'))
 
@@ -74,14 +112,7 @@ def logout():
 def add_job():
     form = JobForm(data={'team_leader_id': current_user.id})
     if form.validate_on_submit():
-        job = Jobs()
-        job.job = form.job.data
-        job.team_leader_id = form.team_leader_id.data
-        job.work_size = form.work_size.data
-        job.collaborators = form.collaborators.data
-        job.is_finished = form.is_finished.data
-        session.add(job)
-        session.commit()
+        save_job(form)
         return redirect('/?message=Job added&message_type=success')
     return render_template('add_job.html', title='Adding a Job', form=form)
 
@@ -94,12 +125,7 @@ def edit_job(job_id):
         if current_user.id == 1 or current_user.id == job.team_leader_id:
             form = JobForm(obj=job)
             if form.validate_on_submit():
-                job.job = form.job.data
-                job.team_leader_id = form.team_leader_id.data
-                job.work_size = form.work_size.data
-                job.collaborators = form.collaborators.data
-                job.is_finished = form.is_finished.data
-                session.commit()
+                save_job(form, job)
                 return redirect('/?message=Job saved&message_type=success')
             return render_template('add_job.html', title='Editing a Job', form=form)
         return redirect('/?message=You haven\'t permission for editing others '
@@ -134,13 +160,7 @@ def departments():
 def add_department():
     form = DepartmentForm(data={'chief_id': current_user.id})
     if form.validate_on_submit():
-        department = Department()
-        department.title = form.title.data
-        department.chief_id = form.chief_id.data
-        department.members = form.members.data
-        department.email = form.email.data
-        session.add(department)
-        session.commit()
+        save_department(form)
         return redirect('/departments?message=Department added&message_type=success')
     return render_template('add_department.html', title='Adding a Department', form=form)
 
@@ -153,11 +173,7 @@ def edit_department(dep_id):
         if current_user.id == 1 or current_user.id == department.chief_id:
             form = DepartmentForm(obj=department)
             if form.validate_on_submit():
-                department.title = form.title.data
-                department.chief_id = form.chief_id.data
-                department.members = form.members.data
-                department.email = form.email.data
-                session.commit()
+                save_department(form, department)
                 return redirect('/departments?message=Department saved&message_type=success')
             return render_template('add_department.html', title='Editing a Department', form=form)
         return redirect('/departments?message=You haven\'t permission for editing others '

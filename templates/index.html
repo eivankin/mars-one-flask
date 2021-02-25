@@ -19,6 +19,7 @@
                     <th>Team leader</th>
                     <th>Duration</th>
                     <th>List of collaborators</th>
+                    <th>Categories</th>
                     <th>Is finished</th>
                 </tr>
             </thead>
@@ -28,6 +29,7 @@
                     <td>{{ job.team_leader }}</td>
                     <td>{{ job.work_size }} hours</td>
                     <td>{{ job.collaborators }}</td>
+                    <td>{{ job.categories|join(', ') }}</td>
                     <td style="background-color: {% if not job.is_finished %}lightpink{% else %}lightgreen{% endif %}">
                         Is {% if not job.is_finished %}not {% endif %}finished
                     </td>
