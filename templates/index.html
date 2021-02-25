@@ -6,7 +6,9 @@
             {{ message }}
         </div>
     {% endif %}
-    <a class="btn btn-secondary" href="/add-job">Add job</a>
+    {% if current_user.is_authenticated %}
+        <a class="btn btn-secondary" href="/add-job">Add job</a>
+    {% endif %}
     {% for job in jobs %}
         <h2>Action # {{ loop.index }}</h2>
         <table class="table">
