@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 from flask_login import LoginManager, login_user, login_required, logout_user
 from data import db_session
 from data.models import User, Jobs
-from forms import RegisterForm, LoginForm
+from forms import RegisterForm, LoginForm, AddJobForm
 
 load_dotenv()
 app = Flask(__name__)
@@ -51,8 +51,7 @@ def register():
 def login():
     form = LoginForm()
     if form.validate_on_submit():
-        db_sess = db_session.create_session()
-        user = db_sess.query(User).filter(User.email == form.email.data).first()
+        user = session.query(User).filter(User.email == form.email.data).first()
         if user and user.check_password(form.password.data):
             login_user(user, remember=form.remember_me.data)
             return redirect('/')
@@ -65,7 +64,22 @@ def login():
 @login_required
 def logout():
     logout_user()
-    return redirect("/")
+    return redirect('/')
+
+
+@app.route('/add-job', methods=['GET', 'POST'])
+def add_job():
+    form = AddJobForm()
+    if form.validate_on_submit():
+        job = Jobs()
+        job.job = form.title.data
+        job.team_leader = form.leader.data
+        job.work_size = form.size.data
+        job.collaborators = form.collaborators.data
+        session.add(job)
+        session.commit()
+        return redirect('/')
+    return render_template('add_job.html', title='Adding a Job', form=form)
 
 
 if __name__ == '__main__':
