@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 {% block content %}
-    <h1>Register Form</h1>
+    <h1>{{ title }}</h1>
     <form action="" method="post">
         {% if message %}
             <div class="alert alert-{{ message_type }}" role="alert">
@@ -11,7 +11,8 @@
         {% for field in form if field.name not in ('csrf_token', 'submit') %}
             <p>
                 {{ field.label() }}<br>
-                {{ field(class='form-control', type=('password' if 'password' in field.name else 'text'))}}
+                {% set params = {'class': 'form-control', 'type': 'number' if field.name == 'chief' else ('email' if field.name == 'email' else 'text')} %}
+                {{ field(**params)}}
                 {% for error in field.errors %}
                     <div class="alert alert-danger" role="alert">
                         {{ error }}

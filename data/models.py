@@ -43,3 +43,14 @@ class Jobs(SqlAlchemyBase):
     start_date = sqlalchemy.Column(sqlalchemy.DateTime, default=datetime.datetime.now)
     end_date = sqlalchemy.Column(sqlalchemy.DateTime, default=datetime.datetime.now)
     is_finished = sqlalchemy.Column(sqlalchemy.Boolean)
+
+
+class Department(SqlAlchemyBase):
+    __tablename__ = 'departments'
+
+    id = sqlalchemy.Column(sqlalchemy.Integer,
+                           primary_key=True, autoincrement=True)
+    chief = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey('users.id'))
+    title = sqlalchemy.Column(sqlalchemy.String)
+    members = sqlalchemy.Column(sqlalchemy.String)
+    email = sqlalchemy.Column(sqlalchemy.String, unique=True)

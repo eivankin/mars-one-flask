@@ -4,8 +4,8 @@ from dotenv import load_dotenv
 from flask_login import LoginManager, login_user, login_required, \
     logout_user, current_user
 from data import db_session
-from data.models import User, Jobs
-from forms import RegisterForm, LoginForm, AddJobForm
+from data.models import User, Jobs, Department
+from forms import RegisterForm, LoginForm, JobForm, DepartmentForm
 
 load_dotenv()
 app = Flask(__name__)
@@ -72,7 +72,7 @@ def logout():
 @app.route('/add-job', methods=['GET', 'POST'])
 @login_required
 def add_job():
-    form = AddJobForm(data={'team_leader': current_user.id})
+    form = JobForm(data={'team_leader': current_user.id})
     if form.validate_on_submit():
         job = Jobs()
         job.job = form.job.data
@@ -82,7 +82,7 @@ def add_job():
         job.is_finished = form.is_finished.data
         session.add(job)
         session.commit()
-        return redirect('/')
+        return redirect('/?message=Job added&message_type=success')
     return render_template('add_job.html', title='Adding a Job', form=form)
 
 
@@ -92,7 +92,7 @@ def edit_job(job_id):
     job = session.query(Jobs).get(job_id)
     if job:
         if current_user.id == 1 or current_user.id == job.team_leader:
-            form = AddJobForm(obj=job)
+            form = JobForm(obj=job)
             if form.validate_on_submit():
                 job.job = form.job.data
                 job.team_leader = form.team_leader.data
@@ -119,6 +119,66 @@ def delete_job(job_id):
         return redirect('/?message=You haven\'t permission for deleting others '
                         'jobs!&message_type=danger')
     return redirect(f'/?message=Job with id "{job_id}" not found&message_type=danger')
+
+
+@app.route('/departments')
+def departments():
+    return render_template('departments.html', title='Departments',
+                           departments=session.query(Department).all(),
+                           message=request.args.get('message'),
+                           message_type=request.args.get('message_type'))
+
+
+@app.route('/add-department', methods=['GET', 'POST'])
+@login_required
+def add_department():
+    form = DepartmentForm(data={'chief': current_user.id})
+    if form.validate_on_submit():
+        department = Department()
+        department.title = form.title.data
+        department.chief = form.chief.data
+        department.members = form.members.data
+        department.email = form.email.data
+        session.add(department)
+        session.commit()
+        return redirect('/departments?message=Department added&message_type=success')
+    return render_template('add_department.html', title='Adding a Department', form=form)
+
+
+@app.route('/edit-department/<int:dep_id>', methods=['GET', 'POST'])
+@login_required
+def edit_department(dep_id):
+    department = session.query(Department).get(dep_id)
+    if department:
+        if current_user.id == 1 or current_user.id == department.chief:
+            form = DepartmentForm(obj=department)
+            if form.validate_on_submit():
+                department.title = form.title.data
+                department.chief = form.chief.data
+                department.members = form.members.data
+                department.email = form.email.data
+                session.commit()
+                return redirect('/departments?message=Department saved&message_type=success')
+            return render_template('add_department.html', title='Editing a Department', form=form)
+        return redirect('/departments?message=You haven\'t permission for editing others '
+                        'departments!&message_type=danger')
+    return redirect(f'/departments?message=Department with id "{dep_id}" not found&message_type'
+                    '=danger')
+
+
+@app.route('/delete-department/<int:dep_id>')
+@login_required
+def delete_department(dep_id):
+    department = session.query(Department).get(dep_id)
+    if department:
+        if current_user.id == 1 or current_user.id == department.chief:
+            session.delete(department)
+            session.commit()
+            return redirect('/departments?message=Department deleted&message_type=success')
+        return redirect('/departments?message=You haven\'t permission for deleting others '
+                        'departments!&message_type=danger')
+    return redirect(f'/departments?message=Department with id "{dep_id}" not found&message_type'
+                    '=danger')
 
 
 if __name__ == '__main__':

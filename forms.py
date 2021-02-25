@@ -1,6 +1,7 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SubmitField, \
     IntegerField, BooleanField
+from wtforms.fields.html5 import EmailField
 from wtforms.validators import DataRequired, EqualTo
 
 
@@ -25,11 +26,20 @@ class LoginForm(FlaskForm):
     submit = SubmitField('Sign in')
 
 
-class AddJobForm(FlaskForm):
+class JobForm(FlaskForm):
     job = StringField('Job title', validators=[DataRequired()])
     team_leader = IntegerField('Team Leader ID', validators=[DataRequired()])
     work_size = IntegerField('Work size (hours)', validators=[DataRequired()])
     collaborators = StringField('Collaborators IDs (comma-separated)',
                                 validators=[DataRequired()])
     is_finished = BooleanField('Is job finished?')
+    submit = SubmitField('Submit')
+
+
+class DepartmentForm(FlaskForm):
+    chief = IntegerField('Chief ID', validators=[DataRequired()])
+    title = StringField('Title of Department', validators=[DataRequired()])
+    members = StringField('Members IDs (comma-separated)',
+                          validators=[DataRequired()])
+    email = EmailField('Department E-mail', validators=[DataRequired()])
     submit = SubmitField('Submit')
