@@ -2,27 +2,37 @@ import os
 from flask import Flask, render_template
 from werkzeug.security import generate_password_hash
 from dotenv import load_dotenv
-from data import db_session, jobs, users
+from flask_login import LoginManager
+from data import db_session
+from data.models import User, Jobs
 from forms import RegisterForm
 
 load_dotenv()
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv('APP_SECRET_KEY')
+login_manager = LoginManager()
+login_manager.init_app(app)
+
+
+@login_manager.user_loader
+def load_user(user_id):
+    db_sess = db_session.create_session()
+    return db_sess.query(User).get(user_id)
 
 
 @app.route('/')
 def works_log():
-    return render_template('works_log.html', jobs=session.query(jobs.Jobs).all())
+    return render_template('works_log.html', jobs=session.query(Jobs).all())
 
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     form = RegisterForm()
     if form.validate_on_submit():
-        if session.query(users.User).filter(users.User.email == form.login.data).first():
+        if session.query(User).filter(User.email == form.login.data).first():
             return render_template('login.html', title='Регистрация', form=form,
                                    message='Login is not unique!', message_type='danger')
-        user = users.User()
+        user = User()
         user.surname = form.surname.data
         user.name = form.name.data
         user.age = form.age.data
