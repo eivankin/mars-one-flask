@@ -72,11 +72,11 @@ def logout():
 @app.route('/add-job', methods=['GET', 'POST'])
 @login_required
 def add_job():
-    form = JobForm(data={'team_leader': current_user.id})
+    form = JobForm(data={'team_leader_id': current_user.id})
     if form.validate_on_submit():
         job = Jobs()
         job.job = form.job.data
-        job.team_leader = form.team_leader.data
+        job.team_leader_id = form.team_leader_id.data
         job.work_size = form.work_size.data
         job.collaborators = form.collaborators.data
         job.is_finished = form.is_finished.data
@@ -91,11 +91,11 @@ def add_job():
 def edit_job(job_id):
     job = session.query(Jobs).get(job_id)
     if job:
-        if current_user.id == 1 or current_user.id == job.team_leader:
+        if current_user.id == 1 or current_user.id == job.team_leader_id:
             form = JobForm(obj=job)
             if form.validate_on_submit():
                 job.job = form.job.data
-                job.team_leader = form.team_leader.data
+                job.team_leader_id = form.team_leader_id.data
                 job.work_size = form.work_size.data
                 job.collaborators = form.collaborators.data
                 job.is_finished = form.is_finished.data
@@ -112,7 +112,7 @@ def edit_job(job_id):
 def delete_job(job_id):
     job = session.query(Jobs).get(job_id)
     if job:
-        if current_user.id == 1 or current_user.id == job.team_leader:
+        if current_user.id == 1 or current_user.id == job.team_leader_id:
             session.delete(job)
             session.commit()
             return redirect('/?message=Job deleted&message_type=success')
@@ -132,11 +132,11 @@ def departments():
 @app.route('/add-department', methods=['GET', 'POST'])
 @login_required
 def add_department():
-    form = DepartmentForm(data={'chief': current_user.id})
+    form = DepartmentForm(data={'chief_id': current_user.id})
     if form.validate_on_submit():
         department = Department()
         department.title = form.title.data
-        department.chief = form.chief.data
+        department.chief_id = form.chief_id.data
         department.members = form.members.data
         department.email = form.email.data
         session.add(department)
@@ -150,11 +150,11 @@ def add_department():
 def edit_department(dep_id):
     department = session.query(Department).get(dep_id)
     if department:
-        if current_user.id == 1 or current_user.id == department.chief:
+        if current_user.id == 1 or current_user.id == department.chief_id:
             form = DepartmentForm(obj=department)
             if form.validate_on_submit():
                 department.title = form.title.data
-                department.chief = form.chief.data
+                department.chief_id = form.chief_id.data
                 department.members = form.members.data
                 department.email = form.email.data
                 session.commit()
@@ -171,7 +171,7 @@ def edit_department(dep_id):
 def delete_department(dep_id):
     department = session.query(Department).get(dep_id)
     if department:
-        if current_user.id == 1 or current_user.id == department.chief:
+        if current_user.id == 1 or current_user.id == department.chief_id:
             session.delete(department)
             session.commit()
             return redirect('/departments?message=Department deleted&message_type=success')

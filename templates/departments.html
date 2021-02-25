@@ -25,12 +25,12 @@
                 <tr>
                     <td>{{ dep.title }}</td>
                     <td>{{ dep.chief }}</td>
-                    <td>{{ dep.members }} hours</td>
+                    <td>{{ dep.members }}</td>
                     <td>{{ dep.email }}</td>
                 </tr>
             </tbody>
         </table>
-        {% if current_user.id in (1, dep.chief) %}
+        {% if current_user.id in (1, dep.chief_id) %}
             <a class="btn btn-warning" href="/edit-department/{{ dep.id }}">Edit Department</a>
             <a class="btn btn-danger" href="/delete-department/{{ dep.id }}">Delete Department</a>
         {% endif %}

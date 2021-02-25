@@ -11,7 +11,7 @@
         {% for field in form if field.name not in ('csrf_token', 'submit') %}
             <p>
                 {{ field.label() }}<br>
-                {% set params = {'class': 'form-control', 'type': 'number' if field.name == 'chief' else ('email' if field.name == 'email' else 'text')} %}
+                {% set params = {'class': 'form-control', 'type': 'number' if field.name == 'chief_id' else ('email' if field.name == 'email' else 'text')} %}
                 {{ field(**params)}}
                 {% for error in field.errors %}
                     <div class="alert alert-danger" role="alert">

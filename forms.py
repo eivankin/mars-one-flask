@@ -28,7 +28,7 @@ class LoginForm(FlaskForm):
 
 class JobForm(FlaskForm):
     job = StringField('Job title', validators=[DataRequired()])
-    team_leader = IntegerField('Team Leader ID', validators=[DataRequired()])
+    team_leader_id = IntegerField('Team Leader ID', validators=[DataRequired()])
     work_size = IntegerField('Work size (hours)', validators=[DataRequired()])
     collaborators = StringField('Collaborators IDs (comma-separated)',
                                 validators=[DataRequired()])
@@ -37,7 +37,7 @@ class JobForm(FlaskForm):
 
 
 class DepartmentForm(FlaskForm):
-    chief = IntegerField('Chief ID', validators=[DataRequired()])
+    chief_id = IntegerField('Chief ID', validators=[DataRequired()])
     title = StringField('Title of Department', validators=[DataRequired()])
     members = StringField('Members IDs (comma-separated)',
                           validators=[DataRequired()])

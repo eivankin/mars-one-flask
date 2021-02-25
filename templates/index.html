@@ -34,7 +34,7 @@
                 </tr>
             </tbody>
         </table>
-        {% if current_user.id in (1, job.team_leader) %}
+        {% if current_user.id in (1, job.team_leader_id) %}
             <a class="btn btn-warning" href="/edit-job/{{ job.id }}">Edit Job</a>
             <a class="btn btn-danger" href="/delete-job/{{ job.id }}">Delete Job</a>
         {% endif %}
