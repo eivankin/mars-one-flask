@@ -1,7 +1,8 @@
 import os
-from flask import Flask, render_template, redirect
+from flask import Flask, render_template, redirect, request
 from dotenv import load_dotenv
-from flask_login import LoginManager, login_user, login_required, logout_user
+from flask_login import LoginManager, login_user, login_required, \
+    logout_user, current_user
 from data import db_session
 from data.models import User, Jobs
 from forms import RegisterForm, LoginForm, AddJobForm
@@ -15,13 +16,14 @@ login_manager.init_app(app)
 
 @login_manager.user_loader
 def load_user(user_id):
-    db_sess = db_session.create_session()
-    return db_sess.query(User).get(user_id)
+    return session.query(User).get(user_id)
 
 
 @app.route('/')
 def works_log():
-    return render_template('works_log.html', jobs=session.query(Jobs).all())
+    return render_template('index.html', jobs=session.query(Jobs).all(),
+                           title='Works log', message=request.args.get('message'),
+                           message_type=request.args.get('message_type'))
 
 
 @app.route('/register', methods=['GET', 'POST'])
@@ -68,18 +70,41 @@ def logout():
 
 
 @app.route('/add-job', methods=['GET', 'POST'])
+@login_required
 def add_job():
-    form = AddJobForm()
+    form = AddJobForm(data={'team_leader': current_user.id})
     if form.validate_on_submit():
         job = Jobs()
-        job.job = form.title.data
-        job.team_leader = form.leader.data
-        job.work_size = form.size.data
+        job.job = form.job.data
+        job.team_leader = form.team_leader.data
+        job.work_size = form.work_size.data
         job.collaborators = form.collaborators.data
+        job.is_finished = form.is_finished.data
         session.add(job)
         session.commit()
         return redirect('/')
     return render_template('add_job.html', title='Adding a Job', form=form)
+
+
+@app.route('/edit-job/<int:job_id>', methods=['GET', 'POST'])
+@login_required
+def edit_job(job_id):
+    job = session.query(Jobs).get(job_id)
+    if job:
+        if current_user.id == 1 or current_user.id == job.team_leader:
+            form = AddJobForm(obj=job)
+            if form.validate_on_submit():
+                job.job = form.job.data
+                job.team_leader = form.team_leader.data
+                job.work_size = form.work_size.data
+                job.collaborators = form.collaborators.data
+                job.is_finished = form.is_finished.data
+                session.commit()
+                return redirect('/?message=Job saved&message_type=success')
+            return render_template('add_job.html', title='Editing a Job', form=form)
+        return redirect('/?message=You haven\'t permission for editing others '
+                        'jobs!&message_type=danger')
+    return redirect(f'/?message=Job with id {job_id} not found&message_type=danger')
 
 
 if __name__ == '__main__':

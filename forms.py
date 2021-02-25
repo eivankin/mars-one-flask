@@ -26,9 +26,9 @@ class LoginForm(FlaskForm):
 
 
 class AddJobForm(FlaskForm):
-    title = StringField('Job title', validators=[DataRequired()])
-    leader = IntegerField('Team Leader ID', validators=[DataRequired()])
-    size = IntegerField('Work size (hours)', validators=[DataRequired()])
+    job = StringField('Job title', validators=[DataRequired()])
+    team_leader = IntegerField('Team Leader ID', validators=[DataRequired()])
+    work_size = IntegerField('Work size (hours)', validators=[DataRequired()])
     collaborators = StringField('Collaborators IDs (comma-separated)',
                                 validators=[DataRequired()])
     is_finished = BooleanField('Is job finished?')

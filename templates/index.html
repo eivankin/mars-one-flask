@@ -1,6 +1,11 @@
 {% extends 'base.html' %}
 {% block content %}
-    <h1 class="text-center"></h1>
+    <h1 class="text-center">{{ title }}</h1>
+    {% if message %}
+        <div class="alert alert-{{ message_type }}" role="alert">
+            {{ message }}
+        </div>
+    {% endif %}
     {% for job in jobs %}
         <h2>Action # {{ loop.index }}</h2>
         <table class="table">
@@ -19,7 +24,7 @@
                     <td>{{ job.team_leader }}</td>
                     <td>{{ job.work_size }} hours</td>
                     <td>{{ job.collaborators }}</td>
-                    <td {% if not job.is_finished %}style="background-color: lightpink"{% endif %}>
+                    <td style="background-color: {% if not job.is_finished %}lightpink{% else %}lightgreen{% endif %}">
                         Is {% if not job.is_finished %}not {% endif %}finished
                     </td>
                 </tr>
