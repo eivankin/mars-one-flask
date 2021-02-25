@@ -1,7 +1,7 @@
 import os
 from flask import Flask, render_template, redirect
 from dotenv import load_dotenv
-from flask_login import LoginManager, login_user
+from flask_login import LoginManager, login_user, login_required, logout_user
 from data import db_session
 from data.models import User, Jobs
 from forms import RegisterForm, LoginForm
@@ -59,6 +59,13 @@ def login():
         return render_template('login.html', title='Login', message_type='danger',
                                message='Invalid login or password', form=form)
     return render_template('login.html', title='Login', form=form)
+
+
+@app.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    return redirect("/")
 
 
 if __name__ == '__main__':
