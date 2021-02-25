@@ -104,7 +104,21 @@ def edit_job(job_id):
             return render_template('add_job.html', title='Editing a Job', form=form)
         return redirect('/?message=You haven\'t permission for editing others '
                         'jobs!&message_type=danger')
-    return redirect(f'/?message=Job with id {job_id} not found&message_type=danger')
+    return redirect(f'/?message=Job with id "{job_id}" not found&message_type=danger')
+
+
+@app.route('/delete-job/<int:job_id>')
+@login_required
+def delete_job(job_id):
+    job = session.query(Jobs).get(job_id)
+    if job:
+        if current_user.id == 1 or current_user.id == job.team_leader:
+            session.delete(job)
+            session.commit()
+            return redirect('/?message=Job deleted&message_type=success')
+        return redirect('/?message=You haven\'t permission for deleting others '
+                        'jobs!&message_type=danger')
+    return redirect(f'/?message=Job with id "{job_id}" not found&message_type=danger')
 
 
 if __name__ == '__main__':
