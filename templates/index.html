@@ -6,6 +6,7 @@
             {{ message }}
         </div>
     {% endif %}
+    <a class="btn btn-secondary" href="/add-job">Add job</a>
     {% for job in jobs %}
         <h2>Action # {{ loop.index }}</h2>
         <table class="table">
@@ -30,5 +31,9 @@
                 </tr>
             </tbody>
         </table>
+        {% if current_user.id in (1, job.team_leader) %}
+            <a class="btn btn-warning" href="/edit-job/{{ job.id }}">Edit Job</a>
+            <a class="btn btn-danger" href="/delete-job/{{ job.id }}">Delete Job</a>
+        {% endif %}
     {% endfor %}
 {% endblock %}
