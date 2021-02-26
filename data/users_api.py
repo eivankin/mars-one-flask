@@ -3,9 +3,9 @@ from . import db_session
 from .models import User
 
 users_attrs = ('id', 'surname', 'name', 'age', 'position', 'speciality',
-               'address', 'email', 'modified_date')
+               'address', 'email', 'modified_date', 'city_from')
 users_fields = ('surname', 'name', 'age', 'position', 'speciality',
-                'address', 'email', 'modified_date', 'password')
+                'address', 'email', 'modified_date', 'password', 'city_from')
 db_session.global_init('db/mars_explorer.sqlite')
 session = db_session.create_session()
 blueprint = Blueprint(

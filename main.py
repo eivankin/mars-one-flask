@@ -1,18 +1,39 @@
 import os
 import json
-from flask import Flask, render_template, redirect, request, make_response, jsonify
+from flask import Flask, render_template, redirect, request, make_response, jsonify, abort
 from dotenv import load_dotenv
 from flask_login import LoginManager, login_user, login_required, \
     logout_user, current_user
 from data import db_session, jobs_api, users_api
 from data.models import User, Jobs, Department, Category
 from forms import RegisterForm, LoginForm, JobForm, DepartmentForm
+from requests import get
 
 load_dotenv()
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv('APP_SECRET_KEY')
 login_manager = LoginManager()
 login_manager.init_app(app)
+
+
+def geocoder(**kwargs):
+    if kwargs:
+        response = get('https://geocode-maps.yandex.ru/1.x/', params=kwargs)
+        if response.status_code == 200:
+            objects = response.json()['response']['GeoObjectCollection']['featureMember']
+            if objects:
+                return objects[0]['GeoObject']
+            print('Ничего не найдено')
+            return
+        print('Ошибка выполнения запроса:', response.status_code, response.reason)
+
+
+def get_map_image(**kwargs):
+    if kwargs:
+        response = get('https://static-maps.yandex.ru/1.x/', params=kwargs)
+        if response.status_code == 200:
+            return response.url
+        print('Ошибка выполнения запроса:', response.status_code, response.reason)
 
 
 def save_job(form, job=None):
@@ -205,6 +226,21 @@ def delete_department(dep_id):
                         'departments!&message_type=danger')
     return redirect(f'/departments?message=Department with id "{dep_id}" not found&message_type'
                     '=danger')
+
+
+@app.route('/users_show/<int:user_id>')
+def users_show(user_id):
+    user = get(f'http://127.0.0.1:8080/api/users/{user_id}').json()
+    if 'city_from' not in user or not user['city_from']:
+        abort(404)
+    geo_obj = geocoder(format='json', geocode=user['city_from'],
+                       apikey=os.getenv('GEOCODER_API_KEY'))
+    bounds = geo_obj['boundedBy']['Envelope']
+    (x0, y0), (x1, y1) = map(lambda x: map(float, x.split()), bounds.values())
+    return render_template('hometown.html', title='Hometown', city=user['city_from'],
+                           who=user['name'] + ' ' + user['surname'],
+                           image=get_map_image(l='sat', spn=f'{abs(x1 - x0)},{abs(y1 - y0)}',
+                                               ll=geo_obj['Point']['pos'].replace(' ', ',')))
 
 
 if __name__ == '__main__':
