@@ -67,7 +67,7 @@ class Category(SqlAlchemyBase, SerializerMixin):
                            primary_key=True, autoincrement=True)
     name = sqlalchemy.Column(sqlalchemy.String)
 
-    def __str__(self):
+    def __repr__(self):
         return self.name
 
 

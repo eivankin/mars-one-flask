@@ -56,6 +56,11 @@ def not_found(error=None):
     return make_response(jsonify({'error': 'Not found'}), 404)
 
 
+@app.errorhandler(400)
+def not_found(error=None):
+    return make_response(jsonify({'error': 'Bad request'}), 400)
+
+
 @app.route('/')
 def works_log():
     # Решил оправдать наличие категорий хоть каким-то функционалом
