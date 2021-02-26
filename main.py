@@ -1,10 +1,10 @@
 import os
 import json
-from flask import Flask, render_template, redirect, request
+from flask import Flask, render_template, redirect, request, make_response, jsonify
 from dotenv import load_dotenv
 from flask_login import LoginManager, login_user, login_required, \
     logout_user, current_user
-from data import db_session
+from data import db_session, jobs_api
 from data.models import User, Jobs, Department, Category
 from forms import RegisterForm, LoginForm, JobForm, DepartmentForm
 
@@ -49,6 +49,11 @@ def save_department(form, department=None):
 @login_manager.user_loader
 def load_user(user_id):
     return session.query(User).get(user_id)
+
+
+@app.errorhandler(404)
+def not_found(error=None):
+    return make_response(jsonify({'error': 'Not found'}), 404)
 
 
 @app.route('/')
@@ -200,4 +205,5 @@ def delete_department(dep_id):
 if __name__ == '__main__':
     db_session.global_init('db/mars_explorer.sqlite')
     session = db_session.create_session()
+    app.register_blueprint(jobs_api.blueprint)
     app.run(port=8080, host='127.0.0.1')
