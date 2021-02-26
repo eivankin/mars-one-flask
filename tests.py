@@ -1,5 +1,5 @@
 import datetime as dt
-from requests import get, post, delete
+from requests import get, post, delete, put
 from data.jobs_api import job_fields, DATE_FORMAT
 
 
@@ -49,6 +49,27 @@ def test_add_valid_job():
     last_job = get('http://127.0.0.1:8080/api/jobs').json()['jobs'][-1]
     del last_job['id']
     assert job == last_job
+
+
+def test_edit_nonexistent_job():
+    response = put('http://127.0.0.1:8080/api/jobs/0')
+    assert response.status_code == 404
+    assert response.json() == {'error': 'Not found'}
+
+
+def test_edit_job_with_invalid_data():
+    response = put('http://127.0.0.1:8080/api/jobs/1', json={'job': 'Invalid job'})
+    assert response.status_code == 400
+    assert response.json() == {'error': 'Bad request'}
+
+
+def test_edit_job():
+    job = get('http://127.0.0.1:8080/api/jobs').json()['jobs'][-1]
+    job['categories'] = list({1, 2, 3} - set(cat['id'] for cat in job['categories']))
+    response = put(f'http://127.0.0.1:8080/api/jobs/{job["id"]}', json=job).json()
+    assert response == {'status': 'ok'}
+    job['categories'] = [{'id': cat} for cat in job['categories']]
+    assert get(f'http://127.0.0.1:8080/api/jobs/{job["id"]}').json() == job
 
 
 def test_delete_nonexistent_job():

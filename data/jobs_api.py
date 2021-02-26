@@ -4,7 +4,7 @@ from . import db_session
 from .models import Jobs, Category
 
 job_attrs = ('id', 'job', 'team_leader_id', 'work_size', 'collaborators',
-             'is_finished', 'start_date', 'end_date', 'categories.name')
+             'is_finished', 'start_date', 'end_date', 'categories.id')
 job_fields = ('job', 'team_leader_id', 'work_size', 'collaborators',
               'is_finished', 'start_date', 'end_date', 'categories')
 DATE_FORMAT = '%Y-%m-%d %H:%M:%S'
@@ -55,3 +55,21 @@ def delete_job(job_id):
     session.commit()
     return jsonify({'status': 'ok'})
 
+
+@blueprint.route('/api/jobs/<int:job_id>', methods=['PUT'])
+def edit_job(job_id):
+    job = session.query(Jobs).get(job_id)
+    if not job:
+        abort(404)
+    if not request.json or any(key not in request.json for key in job_fields):
+        abort(400)
+    tmp = request.json.copy()
+    del tmp['categories'], tmp['end_date'], tmp['start_date']
+    for key, value in tmp.items():
+        setattr(job, key, value)
+    job.categories = session.query(Category).filter(
+        Category.id.in_(request.json['categories'])).all()
+    job.start_date = dt.datetime.strptime(request.json['start_date'], DATE_FORMAT)
+    job.end_date = dt.datetime.strptime(request.json['end_date'], DATE_FORMAT)
+    session.commit()
+    return jsonify({'status': 'ok'})
