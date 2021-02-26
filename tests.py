@@ -1,5 +1,5 @@
 import datetime as dt
-from requests import get, post
+from requests import get, post, delete
 from data.jobs_api import job_fields, DATE_FORMAT
 
 
@@ -12,7 +12,7 @@ def test_get_all_jobs():
 def test_get_one_job():
     response = get('http://127.0.0.1:8080/api/jobs/1').json()
     assert type(response) == dict
-    assert all(key in response for key in job_fields)
+    assert all(key in response for key in job_fields + ('id',))
 
 
 def test_get_nonexistent_job():
@@ -46,4 +46,19 @@ def test_add_valid_job():
            'end_date': (dt.datetime.now() + dt.timedelta(hours=10)).strftime(DATE_FORMAT)}
     response = post('http://127.0.0.1:8080/api/jobs', json=job).json()
     assert response == {'status': 'ok'}
-    assert job in get('http://127.0.0.1:8080/api/jobs').json()['jobs']
+    last_job = get('http://127.0.0.1:8080/api/jobs').json()['jobs'][-1]
+    del last_job['id']
+    assert job == last_job
+
+
+def test_delete_nonexistent_job():
+    response = delete('http://127.0.0.1:8080/api/jobs/0')
+    assert response.status_code == 404
+    assert response.json() == {'error': 'Not found'}
+
+
+def test_delete_existing_job():
+    all_jobs = get('http://127.0.0.1:8080/api/jobs').json()['jobs']
+    response = delete(f'http://127.0.0.1:8080/api/jobs/{all_jobs[-1]["id"]}')
+    assert response.json() == {'status': 'ok'}
+    assert len(all_jobs) == len(get('http://127.0.0.1:8080/api/jobs').json()['jobs']) + 1

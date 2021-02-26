@@ -3,7 +3,7 @@ from flask import jsonify, Blueprint, abort, request
 from . import db_session
 from .models import Jobs, Category
 
-job_attrs = ('job', 'team_leader_id', 'work_size', 'collaborators',
+job_attrs = ('id', 'job', 'team_leader_id', 'work_size', 'collaborators',
              'is_finished', 'start_date', 'end_date', 'categories.name')
 job_fields = ('job', 'team_leader_id', 'work_size', 'collaborators',
               'is_finished', 'start_date', 'end_date', 'categories')
@@ -44,3 +44,14 @@ def create_job():
     session.add(job)
     session.commit()
     return jsonify({'status': 'ok'})
+
+
+@blueprint.route('/api/jobs/<int:job_id>', methods=['DELETE'])
+def delete_job(job_id):
+    job = session.query(Jobs).get(job_id)
+    if not job:
+        abort(404)
+    session.delete(job)
+    session.commit()
+    return jsonify({'status': 'ok'})
+
