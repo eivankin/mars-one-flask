@@ -17,8 +17,8 @@ blueprint = Blueprint(
 
 @blueprint.route('/api/users', methods=['GET'])
 def get_users():
-    return jsonify({'jobs': [user.to_dict(only=users_attrs)
-                             for user in session.query(User).all()]})
+    return jsonify({'users': [user.to_dict(only=users_attrs)
+                              for user in session.query(User).all()]})
 
 
 @blueprint.route('/api/users/<int:user_id>', methods=['GET'])

@@ -4,14 +4,17 @@ from flask import Flask, render_template, redirect, request, make_response, json
 from dotenv import load_dotenv
 from flask_login import LoginManager, login_user, login_required, \
     logout_user, current_user
+from flask_restful import Api, abort as api_abort
+from requests import get
 from data import db_session, jobs_api, users_api
 from data.models import User, Jobs, Department, Category
+from data.users_resource import UsersResource, UsersListResource
 from forms import RegisterForm, LoginForm, JobForm, DepartmentForm
-from requests import get
 
 load_dotenv()
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv('APP_SECRET_KEY')
+api = Api(app)
 login_manager = LoginManager()
 login_manager.init_app(app)
 
@@ -248,4 +251,6 @@ if __name__ == '__main__':
     session = db_session.create_session()
     app.register_blueprint(jobs_api.blueprint)
     app.register_blueprint(users_api.blueprint)
+    api.add_resource(UsersListResource, '/api/v2/users')
+    api.add_resource(UsersResource, '/api/v2/users/<int:user_id>')
     app.run(port=8080, host='127.0.0.1')

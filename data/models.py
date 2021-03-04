@@ -1,9 +1,17 @@
 import datetime
 import sqlalchemy
-from .db_session import SqlAlchemyBase
 from flask_login import UserMixin
+from flask_restful import abort
 from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy_serializer import SerializerMixin
+from .db_session import SqlAlchemyBase
+
+
+def get_or_404(obj_id: int, obj_type: type, session):
+    obj = session.query(obj_type).get(obj_id)
+    if not obj:
+        abort(404, message=f'{obj_type.__name__} {obj_id} not found')
+    return obj
 
 
 class User(SqlAlchemyBase, UserMixin, SerializerMixin):
