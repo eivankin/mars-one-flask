@@ -4,11 +4,12 @@ from flask import Flask, render_template, redirect, request, make_response, json
 from dotenv import load_dotenv
 from flask_login import LoginManager, login_user, login_required, \
     logout_user, current_user
-from flask_restful import Api, abort as api_abort
+from flask_restful import Api
 from requests import get
 from data import db_session, jobs_api, users_api
 from data.models import User, Jobs, Department, Category
 from data.users_resource import UsersResource, UsersListResource
+from data.jobs_resource import JobsResource, JobsListResource
 from forms import RegisterForm, LoginForm, JobForm, DepartmentForm
 
 load_dotenv()
@@ -251,6 +252,8 @@ if __name__ == '__main__':
     session = db_session.create_session()
     app.register_blueprint(jobs_api.blueprint)
     app.register_blueprint(users_api.blueprint)
-    api.add_resource(UsersListResource, '/api/v2/users')
+    api.add_resource(UsersListResource, '/api/v2/users/')
     api.add_resource(UsersResource, '/api/v2/users/<int:user_id>')
+    api.add_resource(JobsListResource, '/api/v2/jobs/')
+    api.add_resource(JobsResource, '/api/v2/jobs/<int:job_id>')
     app.run(port=8080, host='127.0.0.1')

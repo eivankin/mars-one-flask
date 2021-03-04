@@ -17,6 +17,10 @@ blueprint = Blueprint(
 )
 
 
+def get_categories(categories_ids, session):
+    return session.query(Category).filter(Category.id.in_(categories_ids)).all()
+
+
 @blueprint.route('/api/jobs', methods=['GET'])
 def get_jobs():
     return jsonify({'jobs': [job.to_dict(only=job_attrs)
@@ -37,8 +41,7 @@ def create_job():
         abort(400)
     tmp = request.json.copy()
     del tmp['categories'], tmp['end_date'], tmp['start_date']
-    job = Jobs(**tmp, categories=session.query(Category).filter(
-        Category.id.in_(request.json['categories'])).all(),
+    job = Jobs(**tmp, categories=get_categories(request.json['categories'], session),
                start_date=dt.datetime.strptime(request.json['start_date'], DATE_FORMAT),
                end_date=dt.datetime.strptime(request.json['end_date'], DATE_FORMAT))
     session.add(job)
